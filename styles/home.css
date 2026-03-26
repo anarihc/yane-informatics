@@ -187,12 +187,44 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    cursor: pointer;
 }
+
+/* Shared base for both logo images */
 .logo-box img {
-    /* aspect ratio maintains by keeping height auto */
+    position: absolute;
     width: 70%;
     height: auto;
     object-fit: contain;
+    transition: opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
+                transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform, opacity;
+}
+
+/* Default logo — visible at rest */
+.logo-default {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* Hover logo — hidden at rest */
+.logo-hover {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+/* --- HOVER STATE --- */
+/* Default fades out + rotates clockwise 90° */
+.logo-box:hover .logo-default {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+/* Hover image fades in + rotates to 0° (from -45°, i.e. clockwise 45°) */
+.logo-box:hover .logo-hover {
+    opacity: 1;
+    transform: rotate(0deg);
 }
 
 /* Quote Layout */
