@@ -104,6 +104,7 @@
             const LERP_OPACITY = 0.12;
 
             const letters = [];
+            const spacingTargets = new Set();
             let lastMouseX = 0;
             let lastMouseY = 0;
             let mouseInside = false;
@@ -113,14 +114,29 @@
                 // Avoid double-wrapping.
                 if (el.querySelector('span.' + LETTER_CLASS)) return;
 
+                // Preserve original CSS letter-spacing by converting it into per-character spacing.
+                // (After splitting, CSS `letter-spacing` no longer applies between separate spans.)
+                const letterSpacingPx = (() => {
+                    const ls = getComputedStyle(el).letterSpacing;
+                    const n = parseFloat(ls);
+                    return Number.isFinite(n) ? n : 0;
+                })();
+
                 // Split all text nodes into per-character spans. Keep <br> as-is.
                 const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
                 const textNodes = [];
                 while (walker.nextNode()) textNodes.push(walker.currentNode);
 
                 for (const textNode of textNodes) {
-                    const text = textNode.nodeValue;
-                    if (!text) continue;
+                    const raw = textNode.nodeValue;
+                    if (!raw) continue;
+                    // If the text node is only formatting whitespace (indent/newlines), skip it.
+                    if (raw.trim() === '') continue;
+
+                    // Normalize whitespace to match default HTML collapsing:
+                    // this prevents indentation used in your HTML formatting from turning into
+                    // extra visible spaces once we split characters and convert spaces to NBSP.
+                    const text = raw.replace(/\s+/g, ' ');
 
                     const frag = document.createDocumentFragment();
                     for (const ch of Array.from(text)) {
@@ -136,6 +152,18 @@
                     }
                     textNode.parentNode.replaceChild(frag, textNode);
                 }
+
+                // Recreate the spacing between characters (approximation of CSS letter-spacing).
+                if (letterSpacingPx !== 0) {
+                    const spans = el.querySelectorAll('span.' + LETTER_CLASS);
+                    const lastIdx = spans.length - 1;
+                    spans.forEach((span, i) => {
+                        span.style.marginRight = i === lastIdx ? '0px' : `${letterSpacingPx}px`;
+                    });
+                }
+
+                // Track target so letter-spacing approximation can be recalculated on resize.
+                spacingTargets.add(el);
             }
 
             function buildLetters() {
@@ -198,6 +226,21 @@
             }
 
             function recomputeLetterCenters() {
+                // Re-apply the letter-spacing approximation on resize so px-based spacing stays accurate.
+                for (const el of spacingTargets) {
+                    const letterSpacingPx = (() => {
+                        const ls = getComputedStyle(el).letterSpacing;
+                        const n = parseFloat(ls);
+                        return Number.isFinite(n) ? n : 0;
+                    })();
+
+                    const spans = el.querySelectorAll('span.' + LETTER_CLASS);
+                    const lastIdx = spans.length - 1;
+                    spans.forEach((span, i) => {
+                        span.style.marginRight = i === lastIdx ? '0px' : `${letterSpacingPx}px`;
+                    });
+                }
+
                 resetTargetsAndVisuals();
                 for (const l of letters) {
                     const r = l.span.getBoundingClientRect();

@@ -257,8 +257,9 @@ a {
 }
 .magnetic-letter {
     display: inline-block;
-    white-space: pre;
     vertical-align: baseline;
+    font: inherit;
+    line-height: inherit;
     transition: none !important; /* JS owns motion; avoid CSS transitions competing */
     will-change: transform, opacity; /* GPU compositing for 60fps */
 }
