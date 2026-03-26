@@ -1,11 +1,12 @@
 :root {
-    --logo-size: clamp(200px, min(32vh, 32vw), 400px);
+    --logo-size: clamp(120px, min(32vh, 32vw), 300px);
     --grid-line-color: rgba(255, 255, 255, 0.45);
     
     /* Global Padding settings */
     --padding-x: clamp(20px, 4vw, 60px);
     --padding-y: clamp(20px, 4vh, 60px);
     --quote-padding: 30px;
+    --nav-buffer: 80px;
 
     --font-mono: 'Source Code Pro', monospace;
     --font-display: 'Dela Gothic One', display;
@@ -58,7 +59,7 @@ a {
     height: 100vh;
     width: 100vw;
     /* Shifting vertical lines further to the left */
-    grid-template-columns: minmax(180px, 0.6fr) var(--logo-size) 1fr;
+    grid-template-columns: minmax(120px, 0.4fr) var(--logo-size) 1fr;
     /* 1.2fr top row, locked center row, 1.4fr bottom row */
     grid-template-rows: 1fr var(--logo-size) 1.2fr;
     grid-template-areas: 
@@ -126,6 +127,7 @@ a {
 .area-cr { 
     grid-area: cr; 
     padding-left: var(--quote-padding);
+    padding-right: calc(var(--padding-x) + var(--nav-buffer));
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -141,7 +143,7 @@ a {
 .area-bc { grid-area: bc; }
 .area-br { 
     grid-area: br; 
-    padding: var(--quote-padding) var(--padding-x) var(--padding-y) var(--quote-padding);
+    padding: var(--quote-padding) calc(var(--padding-x) + var(--nav-buffer)) var(--padding-y) var(--quote-padding);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -232,7 +234,7 @@ a {
 /* Description Text */
 .description {
     line-height: 1.6;
-    font-size: 13px;
+    font-size: clamp(10px, 1.1vw, 13px);
     font-weight: 400;
     color: var(--text-color);
     letter-spacing: 0.04em;
@@ -270,7 +272,7 @@ a {
 
 
 /* Responsive constraints */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 640px) {
     body {
         overflow-y: auto;
         height: auto;
