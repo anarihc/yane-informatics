@@ -84,5 +84,247 @@
             </div>
         </div>
     </div>
+
+    <script>
+        (() => {
+            // Magnetic letter repulsion for `.main-quote` and `.subtitle` (shared RAF loop).
+            const LETTER_CLASS = 'magnetic-letter';
+
+            // Physics tuning per typographic hierarchy (same model, different intensities).
+            const CFG = {
+                'main-quote': { maxRadius: 120, maxDisplacement: 28, maxTiltDeg: 3, minOpacity: 0.75 },
+                subtitle: { maxRadius: 90, maxDisplacement: 18, maxTiltDeg: 2.2, minOpacity: 0.75 },
+                // Weaker profile for body/description text.
+                description: { maxRadius: 70, maxDisplacement: 10, maxTiltDeg: 1.2, minOpacity: 0.85 }
+            };
+
+            // Lerp factors: tuned for fluid, viscous motion (no snappiness).
+            const LERP_POS = 0.16; // 0.12 - 0.18 per spec
+            const LERP_ROT = 0.14;
+            const LERP_OPACITY = 0.12;
+
+            const letters = [];
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+            let mouseInside = false;
+            let needsRecompute = false;
+
+            function wrapElementCharacters(el) {
+                // Avoid double-wrapping.
+                if (el.querySelector('span.' + LETTER_CLASS)) return;
+
+                // Split all text nodes into per-character spans. Keep <br> as-is.
+                const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+                const textNodes = [];
+                while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+                for (const textNode of textNodes) {
+                    const text = textNode.nodeValue;
+                    if (!text) continue;
+
+                    const frag = document.createDocumentFragment();
+                    for (const ch of Array.from(text)) {
+                        const span = document.createElement('span');
+                        span.className = LETTER_CLASS;
+                        span.style.display = 'inline-block';
+                        span.style.transition = 'none'; // JS owns motion; no CSS transitions.
+                        span.style.willChange = 'transform, opacity'; // GPU compositing for 60fps.
+
+                        // Preserve spacing: spaces become non-breaking.
+                        span.textContent = (ch === ' ') ? '\u00A0' : ch;
+                        frag.appendChild(span);
+                    }
+                    textNode.parentNode.replaceChild(frag, textNode);
+                }
+            }
+
+            function buildLetters() {
+                letters.length = 0;
+
+                const targets = document.querySelectorAll('.main-quote, .subtitle, .description, .descrition');
+                for (const el of targets) {
+                    if (!el.classList) continue;
+                    const typeKey = el.classList.contains('main-quote')
+                        ? 'main-quote'
+                        : (el.classList.contains('subtitle')
+                            ? 'subtitle'
+                            : 'description');
+                    const cfg = CFG[typeKey];
+                    if (!cfg) continue;
+
+                    const spans = el.querySelectorAll('span.' + LETTER_CLASS);
+                    for (const span of spans) {
+                        letters.push({
+                            span,
+                            cfg,
+                            // Cached center in viewport coordinates:
+                            lx: 0,
+                            ly: 0,
+                            // Spring state:
+                            curX: 0,
+                            curY: 0,
+                            curRotX: 0,
+                            curRotY: 0,
+                            curOpacity: 1,
+                            // Spring targets:
+                            targetX: 0,
+                            targetY: 0,
+                            targetRotX: 0,
+                            targetRotY: 0,
+                            targetOpacity: 1
+                        });
+                    }
+                }
+            }
+
+            function resetTargetsAndVisuals() {
+                // Reset to rest. This keeps letters stable and prevents cached rect drift.
+                for (const l of letters) {
+                    l.targetX = 0;
+                    l.targetY = 0;
+                    l.targetRotX = 0;
+                    l.targetRotY = 0;
+                    l.targetOpacity = 1;
+
+                    l.curX = 0;
+                    l.curY = 0;
+                    l.curRotX = 0;
+                    l.curRotY = 0;
+                    l.curOpacity = 1;
+
+                    l.span.style.transform = 'translate3d(0px, 0px, 0) rotateX(0deg) rotateY(0deg)';
+                    l.span.style.opacity = '1';
+                }
+            }
+
+            function recomputeLetterCenters() {
+                resetTargetsAndVisuals();
+                for (const l of letters) {
+                    const r = l.span.getBoundingClientRect();
+                    l.lx = r.left + r.width / 2;
+                    l.ly = r.top + r.height / 2;
+                }
+            }
+
+            function scheduleRecompute() {
+                if (needsRecompute) return;
+                needsRecompute = true;
+                requestAnimationFrame(() => {
+                    needsRecompute = false;
+                    recomputeLetterCenters();
+                });
+            }
+
+            function animate() {
+                const mx = lastMouseX;
+                const my = lastMouseY;
+
+                for (const l of letters) {
+                    const { maxRadius, maxDisplacement, maxTiltDeg, minOpacity } = l.cfg;
+
+                    // Distance in viewport space:
+                    // Spec: distance = √((mx - lx)² + (my - ly)²)
+                    const ddx = mx - l.lx;
+                    const ddy = my - l.ly;
+                    const distance = Math.hypot(ddx, ddy);
+
+                    // Compute targets from physics (targets are smoothed in this shared RAF loop).
+                    if (mouseInside && distance <= maxRadius) {
+                        // Spec: force = (1 - (distance / maxRadius))² (non-linear falloff).
+                        const t = 1 - (distance / maxRadius); // proximity 0..1
+                        const force = t * t;
+
+                        // Spec: angle = atan2(ly - my, lx - mx)
+                        const angle = Math.atan2(l.ly - my, l.lx - mx);
+
+                        // Spec: translate displacement capped by maxDisplacement.
+                        const disp = force * maxDisplacement;
+                        l.targetX = Math.cos(angle) * disp;
+                        l.targetY = Math.sin(angle) * disp;
+
+                        // Optional micro-3D tilt away from cursor.
+                        const sinA = Math.sin(angle);
+                        const cosA = Math.cos(angle);
+                        l.targetRotX = (-sinA) * (maxTiltDeg * t);
+                        l.targetRotY = (cosA) * (maxTiltDeg * t);
+
+                        // Optional opacity pulse: at force=1, opacity -> minOpacity.
+                        l.targetOpacity = 1 - (1 - minOpacity) * force;
+                    } else {
+                        // Outside radius (or mouse left): snap targets back to rest (0,0).
+                        l.targetX = 0;
+                        l.targetY = 0;
+                        l.targetRotX = 0;
+                        l.targetRotY = 0;
+                        l.targetOpacity = 1;
+                    }
+
+                    // Spec: Fluid spring/lerp integration (no transforms on mousemove).
+                    l.curX += (l.targetX - l.curX) * LERP_POS;
+                    l.curY += (l.targetY - l.curY) * LERP_POS;
+                    l.curRotX += (l.targetRotX - l.curRotX) * LERP_ROT;
+                    l.curRotY += (l.targetRotY - l.curRotY) * LERP_ROT;
+                    l.curOpacity += (l.targetOpacity - l.curOpacity) * LERP_OPACITY;
+
+                    // GPU-composited transform: translate + subtle tilt.
+                    l.span.style.transform =
+                        `translate3d(${l.curX.toFixed(2)}px, ${l.curY.toFixed(2)}px, 0) rotateX(${l.curRotX.toFixed(2)}deg) rotateY(${l.curRotY.toFixed(2)}deg)`;
+                    l.span.style.opacity = l.curOpacity.toFixed(3);
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            function init() {
+                const targets = document.querySelectorAll('.main-quote, .subtitle, .description, .descrition');
+                if (!targets.length) return;
+
+                // 1) Wrap every character (including spaces) into <span> elements.
+                for (const el of targets) wrapElementCharacters(el);
+
+                // 2) Build model once and cache each span's viewport center.
+                buildLetters();
+                // Recompute immediately so motion feels correct from the first frame.
+                recomputeLetterCenters();
+                if (document.fonts && document.fonts.ready) {
+                    // Fonts can shift metrics; recompute again once they finish loading.
+                    document.fonts.ready.then(recomputeLetterCenters);
+                }
+
+                // Initial mouse state: start centered so the field is stable immediately.
+                lastMouseX = window.innerWidth / 2;
+                lastMouseY = window.innerHeight / 2;
+                mouseInside = true;
+
+                // 3) Mouse tracking: document-wide so the field works near the text.
+                document.addEventListener('mousemove', (e) => {
+                    lastMouseX = e.clientX; // viewport coords
+                    lastMouseY = e.clientY;
+                    mouseInside = true;
+                }, { passive: true });
+
+                // 4) Return-to-rest on mouse leaving the viewport/document.
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) mouseInside = false;
+                });
+
+                window.addEventListener('mouseout', (e) => {
+                    // When the pointer leaves the browser window, relatedTarget is null.
+                    if (!e.relatedTarget) mouseInside = false;
+                }, { passive: true });
+
+                // 5) Recompute cached letter centers only on resize/orientation changes.
+                window.addEventListener('resize', scheduleRecompute, { passive: true });
+
+                requestAnimationFrame(animate);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { once: true });
+            } else {
+                init();
+            }
+        })();
+    </script>
 </body>
 </html>

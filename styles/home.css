@@ -244,6 +244,25 @@ a {
     letter-spacing: 0.05em;
 }
 
+/* --- Magnetic Letter Repulsion --- */
+.main-quote-container {
+    overflow: visible;
+    perspective: 900px; /* Enables subtle 3D tilt without harsh perspective distortion */
+    transform-style: preserve-3d;
+}
+.main-quote,
+.subtitle {
+    overflow: visible;
+    transform-style: preserve-3d;
+}
+.magnetic-letter {
+    display: inline-block;
+    white-space: pre;
+    vertical-align: baseline;
+    transition: none !important; /* JS owns motion; avoid CSS transitions competing */
+    will-change: transform, opacity; /* GPU compositing for 60fps */
+}
+
 /* Vertical Nav (ABOUT / HIRE US) */
 .nav-links.vertical {
     position: absolute;
@@ -271,6 +290,9 @@ a {
     color: var(--text-color);
     letter-spacing: 0.04em;
     max-width: 480px;
+    overflow: visible; /* prevent clipped displaced letters */
+    perspective: 850px; /* enables subtle rotateX/rotateY depth */
+    transform-style: preserve-3d;
 }
 
 /* Bottom Left Logo */
