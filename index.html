@@ -46,7 +46,10 @@
         </div>
         <div class="cell area-cr">
             <div class="main-quote-container">
-                <h1 class="main-quote">“DESIGNS FOR BRANDS THAT<br>REFUSE TO BLEND IN.”</h1>
+                <h1 class="main-quote">
+                    <span class="quote-desktop">“DESIGNS FOR BRANDS THAT<br>REFUSE TO BLEND IN.”</span>
+                    <span class="quote-mobile">“DESIGNS FOR BRANDS<br>THAT REFUSE TO<br>BLEND IN.”</span>
+                </h1>
                 <p class="subtitle">YANE INFORMATICS</p>
             </div>
             <a href="#" class="nav-links vertical about-link">ABOUT</a>
@@ -133,10 +136,10 @@
                     // If the text node is only formatting whitespace (indent/newlines), skip it.
                     if (raw.trim() === '') continue;
 
-                    // Normalize whitespace to match default HTML collapsing:
-                    // this prevents indentation used in your HTML formatting from turning into
-                    // extra visible spaces once we split characters and convert spaces to NBSP.
-                    let text = raw.replace(/\s+/g, ' ');
+                    // Normalize whitespace to match default HTML collapsing for regular whitespace.
+                    // Important: do not collapse NBSP ("\u00A0"), so intentionally preserved spacing
+                    // (e.g. "that   refuse to" on mobile) stays intact after splitting.
+                    let text = raw.replace(/[ \t\r\n]+/g, ' ');
 
                     // Remove indentation-derived leading/trailing spaces at the edges of each
                     // text node. This prevents a visible “extra first space” after we convert

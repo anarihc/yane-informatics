@@ -238,6 +238,14 @@ a {
     margin-bottom: 0.7rem;
     letter-spacing: 0em;
 }
+
+/* Desktop/mobile quote variants (toggled via media query below). */
+.quote-mobile {
+    display: none;
+}
+.quote-desktop {
+    display: inline;
+}
 .subtitle {
     font-weight: 700;
     font-size: clamp(0.9rem, 1.2vw, 1.1rem);
@@ -384,207 +392,237 @@ a {
 }
 
 @media screen and (max-width: 768px) {
-    /* Mobile-only safety */
-    *, *::before, *::after {
-        box-sizing: border-box;
-    }
+    /* =========================================================
+       Mobile-only base / safety
+       ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; }
     body {
         overflow-x: hidden;
         overflow-y: auto;
         height: auto;
     }
 
-    /* Ensure dashed grid overlay remains visible */
-    .grid-line {
-        display: block !important;
+    /* Mobile geometry constants (tuned to screenshot) */
+    :root {
+        --m-gutter: 20px;
+        --m-navbar-h: 52px;
+        --m-guide-x: 38px;          /* left dashed guide from viewport */
+        --m-content-x: 48px;        /* ~10px right of the left guide */
+        --m-right-text: 25px;       /* right aligned nav text inset */
+        --m-logo: 160px; /* slightly larger hero logo (mobile) */
+        --m-logo-radius: 28px;
+        --m-gap: 10px;
+        --m-hero-top: calc(var(--m-navbar-h) + 80px); /* start of hero guide box area */
     }
 
-    /* Layout container: stack content, but keep overlay positioning working */
+    /* Keep existing dashed guide elements visible on mobile */
+    .grid-line { display: block !important; }
+
+    /* =========================================================
+       SECTION 1 — Top navigation bar
+       ========================================================= */
     .grid-container {
-        display: flex;
-        flex-direction: column;
-        height: auto;
+        /* Do NOT touch desktop background/typography. Mobile only layout stacking. */
+        position: relative;
         width: 100vw;
+        height: auto;
+        overflow-x: hidden;
         padding: 0;
         gap: 0;
-        position: relative;
-        overflow-x: hidden;
-        padding-top: 52px; /* top nav bar height */
+        padding-top: var(--m-navbar-h);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
         align-items: flex-start;
     }
 
-    /* Remove empty spacer cells */
-    .area-tc,
-    .area-cl,
-    .area-bc {
-        display: none;
-    }
+    /* Hide empty spacer cells (mobile flow) */
+    .area-tc, .area-cl, .area-bc { display: none; }
 
-    /* --- Section 1 — Top Navigation Bar --- */
+    /* Left pill logo */
     .area-tl {
         position: absolute;
         top: 14px;
-        left: 20px;
+        left: var(--m-content-x);
         padding: 0;
-        z-index: 30;
+        z-index: 40;
     }
-    .area-tl .logo-link {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-    }
+    .area-tl .logo-link { display: flex; align-items: center; }
     .pill-badge {
-        padding: 6px 14px;
+        /* Use the existing element, render the asset inside (no HTML changes). */
+        width: 86px;
+        height: 24px;
+        padding: 0;
         border-radius: 999px;
-        border: 1.5px solid rgba(255, 255, 255, 1);
-        background: transparent;
-        letter-spacing: 0.1em;
-        font-size: 12px;
-        font-weight: 500;
-        color: #000;
-        margin-left: 0;
+        border: none;
+        background: transparent url('../assets/infor_logo.webp') left center / contain no-repeat;
+        color: transparent;
+        letter-spacing: 0;
+        font-size: 0;
+        line-height: 0;
     }
 
+    /* Right horizontal nav links */
     .area-tr {
         position: absolute;
         top: 14px;
-        right: 20px;
+        right: var(--m-gutter);
         padding: 0;
-        z-index: 30;
+        z-index: 40;
         display: flex;
         align-items: center;
         justify-content: flex-end;
     }
     .nav-links.horizontal {
         display: flex;
-        gap: 22px;
         align-items: center;
-        justify-content: flex-end;
+        gap: 22px;
+        justify-content: space-between;
     }
     .nav-links.horizontal a {
-        margin-left: 0;
-        margin-right: 0;
+        color: #fff;               /* white only on mobile */
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.08em;
-        text-decoration: none;
+        text-transform: uppercase;
+        margin: 0;
     }
 
-    /* --- Section 2 — Hero / Logo Block --- */
+    /* =========================================================
+       SECTION 2 — Dashed guide geometry + hero/logo block alignment
+       ========================================================= */
+    /* Reposition dashed overlay guides to match screenshot */
+    .grid-line.h-line { left: 0; width: 100vw; }
+    .grid-line.v-line { top: 0; height: 100%; }
+
+    /* Left full-height guide */
+    .left-line {
+        top: 0;
+        left: calc(var(--m-content-x) - var(--m-gap)); /* keep 10px gap to logo left edge */
+        height: 100%;
+    }
+
+    /* Hero “box” guides around the center logo */
+    /* Place logo block starting at --m-hero-top */
     .area-cc {
-        margin: 0;
         width: 100%;
-        padding-left: 20px;
-        padding-right: 20px;
-        padding: 24px 20px;
-        border: 1px dashed rgba(255, 255, 255, 0.3);
-        height: auto;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
+        margin: 0;
+        padding: 0;
+        border: none; /* dashed is provided by overlay lines, not a border */
         position: relative;
         z-index: 2;
+        height: calc(var(--m-logo) + (var(--m-gap) * 2));
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
     }
+
+    /* Position logo itself in the aligned content column */
     .logo-box {
-        width: 130px;
-        height: 130px;
-        border-radius: 28px;
-        aspect-ratio: 1;
-        margin: 0;
-        max-width: none;
+        width: var(--m-logo);
+        height: var(--m-logo);
+        border-radius: var(--m-logo-radius);
+        margin-left: var(--m-content-x);
+        margin-top: calc(var(--m-hero-top) - var(--m-navbar-h));
+        position: relative;
     }
     .logo-box img {
         width: 100%;
         height: 100%;
+        border-radius: var(--m-logo-radius);
         object-fit: contain;
-        border-radius: 28px;
-        position: absolute;
-        top: 0;
-        left: 0;
     }
 
-    /* Pull vertical labels up into the dashed hero box */
+    /* Top/bottom horizontal guides: 10px above and below the logo block */
+    .top-line {
+        top: calc(var(--m-hero-top) - var(--m-gap));
+    }
+    .bot-line {
+        top: calc(var(--m-hero-top) + var(--m-logo) + var(--m-gap));
+    }
+
+    /* Right guide of the hero box: 10px to the right of the logo */
+    .right-line {
+        left: calc(var(--m-content-x) + var(--m-logo) + var(--m-gap));
+        top: 0;
+        height: 100%;
+    }
+
+    /* =========================================================
+       Right-side vertical nav (ABOUT / HIRE US)
+       ========================================================= */
     .area-cr {
-        margin-top: -178px; /* logo (130) + padding (24*2) */
+        /* Pull this cell up to overlap near the hero guides. */
+        margin-top: calc(-1 * (var(--m-logo) + (var(--m-gap) * 2)));
+        padding: 0;
+        width: 100%;
         position: relative;
-        z-index: 3;
+        z-index: 5;
     }
     .nav-links.vertical {
         position: absolute;
-        right: 20px; /* align to inner right edge */
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
+        right: var(--m-right-text);
         color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        display: block;
-        opacity: 1;
-        visibility: visible;
-
-        /* Ensure clean vertical label rendering (no horizontal “glitch” transforms). */
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        transform-origin: center center;
+        writing-mode: horizontal-tb;
+        transform: none;
     }
     .about-link {
-        top: 20%;
-        right: 0;
-        z-index: 10;
+        top: calc(var(--m-hero-top) + 10px);
     }
     .hire-link {
-        top: 72%;
-        right: 0;
-        z-index: 10;
+        top: calc(var(--m-hero-top) + var(--m-logo) + var(--m-gap) - 10px - 12px);
     }
 
-    /* --- Section 3 — Main Quote & Subtitle --- */
-    .area-cr {
-        /* Desktop aligns this area to the right; override to left. */
-        padding-left: 0;
-        padding-right: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
+    /* =========================================================
+       SECTION 3 — Main quote + subtitle
+       ========================================================= */
     .main-quote-container {
-        margin-top: 178px; /* match tighter dashed hero height */
-        padding: 32px 20px 0 20px;
+        margin-top: calc(var(--m-hero-top) + var(--m-logo) + 34px);
+        padding: 0 0 0 var(--m-content-x);
+        width: calc(100% - var(--m-content-x) - var(--m-gutter));
         max-width: none;
-        width: auto; /* avoid premature wrapping from forced width constraints */
     }
     .main-quote {
-        font-size: clamp(20px, 6.0vw, 20px); /* smaller mobile headline */
+        font-size: clamp(18px, 7vw, 18px);
         line-height: 1.1;
-        margin-bottom: 10px;
         text-align: left;
         letter-spacing: 0;
+        margin: 0 0 8px 0;
         white-space: normal;
-
-        /* Wrapping controls to avoid mid-character breaks */
         word-break: normal;
         overflow-wrap: normal;
         hyphens: none;
     }
+    .quote-desktop { display: none; }
+    .quote-mobile { display: inline; }
     .subtitle {
-        font-size: 13px;
-        line-height: 1.2;
+        font-size: clamp(16px, 4.2vw, 18px);
         letter-spacing: 0.05em;
         font-weight: 700;
         text-align: left;
     }
 
-    /* --- Section 4 — Body Paragraph --- */
+    /* =========================================================
+       SECTION 4 — Body paragraph
+       ========================================================= */
     .area-br {
+        width: 100%;
         padding: 0;
         margin: 0;
-        width: 100%;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;   /* desktop uses right-aligned flex */
-        justify-content: flex-start;
+        align-items: flex-start;
+        flex: 1; /* fill remaining viewport height */
+        order: 0; /* keep description right under main quote */
+        margin-top: 0;
     }
     .description {
-        padding: 24px 20px;
+        padding: 22px var(--m-gutter) 0 var(--m-content-x);
+        width: calc(100% - var(--m-content-x) - var(--m-gutter));
         max-width: none;
         text-transform: uppercase;
         font-size: 11px;
@@ -593,14 +631,23 @@ a {
         color: rgba(255, 255, 255, 0.85);
     }
 
-    /* --- Section 5 — Footer --- */
-    /* The “YANE ENTERPRISES” lockup is not part of the mobile flow in the Figma reference. */
+    /* =========================================================
+       SECTION 5 — Footer (logo + 3 columns)
+       ========================================================= */
     .area-bl {
+        /* Render hrz.png via footer pseudo-element instead (prevents overlap). */
         display: none;
     }
-
+    .hrz-logo {
+        width: 78px;
+        height: auto;
+        opacity: 0.9;
+        margin: 0;
+    }
     .footer-links {
-        padding: 32px 20px 32px; /* ensure second row values never clip */
+        /* Extra top padding reserves space for hrz.png above the micro-text (gap ~10px). */
+        padding: 52px var(--m-gutter) 26px var(--m-content-x);
+        width: calc(100% - var(--m-content-x) - var(--m-gutter));
         margin-top: 0;
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -608,16 +655,24 @@ a {
         align-items: start;
         font-size: 10px;
         line-height: 1.6;
+        color: #000; /* Match desktop footer text */
+        position: relative;
+        margin-top: auto; /* push footer text to bottom of area-br */
     }
-    .footer-block {
-        gap: 4px;
+
+    /* Place hrz.png above footer micro-text, ~10px gap */
+    .footer-links::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 10px; /* aligns with original mobile rhythm */
+        width: 78px;
+        height: 32px;
+        background: url('../assets/hrz.png') left top / contain no-repeat;
+        pointer-events: none;
     }
-    .footer-label {
-        opacity: 0.6;
-        font-weight: 400;
-    }
-    .footer-value {
-        color: #000;
-        font-weight: 400;
-    }
+    .footer-block { gap: 4px; }
+    .footer-label { opacity: 0.6; font-weight: 400; color: #000; }
+    .footer-value { font-weight: 500; color: #000; }
+    .footer-block:nth-child(3) .footer-value { white-space: nowrap; }
 }
