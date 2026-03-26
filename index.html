@@ -136,7 +136,17 @@
                     // Normalize whitespace to match default HTML collapsing:
                     // this prevents indentation used in your HTML formatting from turning into
                     // extra visible spaces once we split characters and convert spaces to NBSP.
-                    const text = raw.replace(/\s+/g, ' ');
+                    let text = raw.replace(/\s+/g, ' ');
+
+                    // Remove indentation-derived leading/trailing spaces at the edges of each
+                    // text node. This prevents a visible “extra first space” after we convert
+                    // spaces to NBSP for per-letter spans (notably inside multiline <p> blocks).
+                    const prev = textNode.previousSibling;
+                    const next = textNode.nextSibling;
+                    const prevIsBr = prev && prev.nodeType === 1 && prev.tagName === 'BR';
+                    const nextIsBr = next && next.nodeType === 1 && next.tagName === 'BR';
+                    if (!prev || prevIsBr) text = text.replace(/^ /, '');
+                    if (!next || nextIsBr) text = text.replace(/ $/, '');
 
                     const frag = document.createDocumentFragment();
                     for (const ch of Array.from(text)) {
