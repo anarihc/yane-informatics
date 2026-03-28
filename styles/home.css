@@ -276,8 +276,12 @@ a {
     vertical-align: baseline;
     font: inherit;
     line-height: inherit;
-    transition: none !important; /* JS owns motion; avoid CSS transitions competing */
-    will-change: transform, opacity; /* GPU compositing for 60fps */
+    transition: none !important;
+    will-change: transform, opacity;
+}
+.word {
+    display: inline-block;
+    white-space: nowrap; /* Forces magnetic letters of a word to stay together */
 }
 
 /* Vertical Nav (ABOUT / HIRE US) */
@@ -366,7 +370,7 @@ a {
         --m-logo: 160px; /* slightly larger hero logo (mobile) */
         --m-logo-radius: 28px;
         --m-gap: 10px;
-        --m-hero-top: calc(var(--m-navbar-h) + 80px); /* start of hero guide box area */
+        --m-hero-top: calc(var(--m-navbar-h) + 70px); /* adjusted from 80 to center unit */
     }
 
     /* Keep existing dashed guide elements visible on mobile */
@@ -385,7 +389,8 @@ a {
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        width: 100vw;
     }
 
     /* Hide empty spacer cells (mobile flow) */
@@ -455,27 +460,28 @@ a {
     }
 
     /* Hero “box” guides around the center logo */
-    /* Place logo block starting at --m-hero-top */
+    /* Position the container precisely to match the dashed square overlay */
     .area-cc {
-        width: 100%;
+        position: absolute;
+        top: calc(var(--m-hero-top) - var(--m-gap));
+        left: calc(var(--m-content-x) - var(--m-gap));
+        width: calc(var(--m-logo) + (var(--m-gap) * 2));
+        height: calc(var(--m-logo) + (var(--m-gap) * 2));
         margin: 0;
         padding: 0;
-        border: none; /* dashed is provided by overlay lines, not a border */
-        position: relative;
-        z-index: 2;
-        height: calc(var(--m-logo) + (var(--m-gap) * 2));
+        border: none;
         display: flex;
-        align-items: flex-start;
-        justify-content: flex-start;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
     }
 
-    /* Position logo itself in the aligned content column */
+    /* Centered inside area-cc box */
     .logo-box {
         width: var(--m-logo);
         height: var(--m-logo);
         border-radius: var(--m-logo-radius);
-        margin-left: var(--m-content-x);
-        margin-top: calc(var(--m-hero-top) - var(--m-navbar-h));
+        margin: 0;
         position: relative;
     }
     .logo-box img {
@@ -504,11 +510,11 @@ a {
        Right-side vertical nav (ABOUT / HIRE US)
        ========================================================= */
     .area-cr {
-        /* Pull this cell up to overlap near the hero guides. */
-        margin-top: calc(-1 * (var(--m-logo) + (var(--m-gap) * 2)));
+        /* Start AFTER the hero logo to prevent overlap since logo is absolute */
+        margin-top: calc(var(--m-hero-top) + var(--m-logo) + var(--m-gap) + 14px);
         padding: 0;
-        width: 100%;
-        position: static; /* Let absolute children align to grid-container */
+        width: 100vw;
+        position: static;
         z-index: 5;
     }
     .nav-links.vertical {
@@ -536,15 +542,24 @@ a {
        SECTION 3 — Main quote + subtitle
        ========================================================= */
     .main-quote-container {
-        margin-top: calc(var(--m-hero-top) + var(--m-logo) + 34px);
-        padding: 0 0 0 var(--m-content-x);
-        width: calc(100% - var(--m-content-x) - var(--m-gutter));
-        max-width: none;
+        margin-top: 0;
+        padding: 0 var(--m-gutter) 0 var(--m-content-x);
+        width: 100%;
+        max-width: none !important;
+        box-sizing: border-box;
+        text-align: left;
+    }
+    .main-quote {
+        width: 100%;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        white-space: normal;
     }
     .main-quote {
         font-size: clamp(18px, 7vw, 18px);
         line-height: 1.1;
-        text-align: left;
+        text-align: justify;
+        text-justify: inter-word;
         letter-spacing: 0;
         margin: 0 0 8px 0;
         white-space: normal;
@@ -565,25 +580,31 @@ a {
        SECTION 4 — Body paragraph
        ========================================================= */
     .area-br {
-        width: 100%;
+        width: 100vw;
         padding: 0;
         margin: 0;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         flex: 1; /* fill remaining viewport height */
         order: 0; /* keep description right under main quote */
         margin-top: 0;
     }
     .description {
         padding: 22px var(--m-gutter) 0 var(--m-content-x);
-        width: calc(100% - var(--m-content-x) - var(--m-gutter));
-        max-width: none;
+        width: 100vw;
+        max-width: none !important;
         text-transform: uppercase;
         font-size: 11px;
         line-height: 1.8;
         letter-spacing: 0.04em;
         color: rgba(255, 255, 255, 0.85);
+        box-sizing: border-box;
+        word-break: normal;
+        overflow-wrap: break-word;
+        hyphens: none;
+        text-align: justify;
+        text-justify: inter-word;
     }
 
     /* =========================================================
