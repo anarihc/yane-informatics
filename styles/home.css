@@ -545,7 +545,7 @@ a {
     .right-line {
         left: calc(var(--m-content-x) + var(--m-logo) + var(--m-gap));
         top: 0;
-        height: 100%;
+        height: calc(var(--m-hero-top) + var(--m-logo) + var(--m-gap));
     }
 
     /* =========================================================
@@ -645,15 +645,14 @@ a {
         margin: 0;
     }
     .footer-links {
-        /* Extra top padding reserves space for hrz.png above the micro-text (gap ~10px). */
         padding: 52px var(--m-gutter) 26px var(--m-content-x);
-        width: calc(100% - var(--m-content-x) - var(--m-gutter));
+        width: 100%;
         margin-top: 0;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
         align-items: start;
-        font-size: 10px;
+        font-size: 7.8px;
         line-height: 1.6;
         color: #000; /* Match desktop footer text */
         position: relative;
@@ -664,15 +663,19 @@ a {
     .footer-links::before {
         content: '';
         position: absolute;
-        left: 0;
+        left: var(--m-content-x);
         top: 10px; /* aligns with original mobile rhythm */
         width: 78px;
         height: 32px;
         background: url('../assets/hrz.png') left top / contain no-repeat;
         pointer-events: none;
     }
-    .footer-block { gap: 4px; }
+    .footer-block { 
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px; 
+    }
     .footer-label { opacity: 0.6; font-weight: 400; color: #000; }
-    .footer-value { font-weight: 500; color: #000; }
-    .footer-block:nth-child(3) .footer-value { white-space: nowrap; }
+    .footer-value { font-weight: 500; color: #000; white-space: nowrap; }
 }
