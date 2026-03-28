@@ -347,16 +347,27 @@
                     document.fonts.ready.then(recomputeLetterCenters);
                 }
 
-                // Initial mouse state: start centered so the field is stable immediately.
-                lastMouseX = window.innerWidth / 2;
-                lastMouseY = window.innerHeight / 2;
-                mouseInside = true;
+                // Initial mouse state: do NOT start active to avoid warping on load.
+                mouseInside = false;
 
-                // 3) Mouse tracking: document-wide so the field works near the text.
+                // 3) Interaction tracking:
                 document.addEventListener('mousemove', (e) => {
-                    lastMouseX = e.clientX; // viewport coords
+                    lastMouseX = e.clientX; 
                     lastMouseY = e.clientY;
                     mouseInside = true;
+                }, { passive: true });
+
+                const handleTouch = (e) => {
+                    if (e.touches && e.touches.length > 0) {
+                        lastMouseX = e.touches[0].clientX;
+                        lastMouseY = e.touches[0].clientY;
+                        mouseInside = true;
+                    }
+                };
+                document.addEventListener('touchstart', handleTouch, { passive: true });
+                document.addEventListener('touchmove', handleTouch, { passive: true });
+                document.addEventListener('touchend', () => {
+                    mouseInside = false;
                 }, { passive: true });
 
                 // 4) Return-to-rest on mouse leaving the viewport/document.
@@ -365,7 +376,6 @@
                 });
 
                 window.addEventListener('mouseout', (e) => {
-                    // When the pointer leaves the browser window, relatedTarget is null.
                     if (!e.relatedTarget) mouseInside = false;
                 }, { passive: true });
 
