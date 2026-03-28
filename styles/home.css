@@ -556,12 +556,12 @@ a {
         margin-top: calc(-1 * (var(--m-logo) + (var(--m-gap) * 2)));
         padding: 0;
         width: 100%;
-        position: relative;
+        position: static; /* Let absolute children align to grid-container */
         z-index: 5;
     }
     .nav-links.vertical {
         position: absolute;
-        right: var(--m-right-text);
+        right: var(--m-gutter);
         color: #fff;
         font-size: 12px;
         font-weight: 600;
@@ -570,11 +570,14 @@ a {
         writing-mode: horizontal-tb;
         transform: none;
     }
-    .about-link {
-        top: calc(var(--m-hero-top) + 10px);
+    .about-link.nav-links.vertical {
+        top: var(--m-hero-top);
+        bottom: auto;
     }
-    .hire-link {
-        top: calc(var(--m-hero-top) + var(--m-logo) + var(--m-gap) - 10px - 12px);
+    .hire-link.nav-links.vertical {
+        top: calc(var(--m-hero-top) + var(--m-logo));
+        bottom: auto;
+        transform: translateY(-100%);
     }
 
     /* =========================================================
