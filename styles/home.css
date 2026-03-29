@@ -236,7 +236,7 @@ a {
     line-height: 1.2;
     margin-bottom: 0.7rem;
     letter-spacing: 0em;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* Desktop/mobile quote variants (toggled via media query below). */
@@ -250,7 +250,7 @@ a {
     font-weight: 700;
     font-size: clamp(0.9rem, 1.2vw, 1.1rem);
     letter-spacing: 0.05em;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* --- Magnetic Letter Repulsion --- */
@@ -307,7 +307,7 @@ a {
     overflow: visible; /* prevent clipped displaced letters */
     perspective: 850px; /* enables subtle rotateX/rotateY depth */
     transform-style: preserve-3d;
-    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* Bottom Left Logo */
