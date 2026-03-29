@@ -37,13 +37,16 @@
             width: 0 !important;
             height: 0 !important;
         }
-        /* Ensure canvas fills viewport behind everything */
+        /* Ensure canvas fills viewport behind everything and bleeds out the bottom/top for Safari safe areas */
+        html {
+            background-color: #000 !important;
+        }
         #gradient {
             position: fixed !important;
-            top: 0 !important;
+            top: -5vh !important;
             left: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
+            height: 115vh !important; 
             z-index: 0 !important;
         }
         /* Elevate grid-container above the canvas */
