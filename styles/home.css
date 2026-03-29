@@ -399,7 +399,7 @@ a {
     /* Left pill logo */
     .area-tl {
         position: absolute;
-        top: 14px;
+        top: 26px;
         left: var(--m-content-x);
         padding: 0;
         z-index: 40;
@@ -422,7 +422,7 @@ a {
     /* Right horizontal nav links */
     .area-tr {
         position: absolute;
-        top: 14px;
+        top: 26px;
         right: var(--m-gutter);
         padding: 0;
         z-index: 40;
