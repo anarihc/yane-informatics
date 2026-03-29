@@ -14,9 +14,47 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Source+Code+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/home.css">
+    <style>
+        /* Hide the NeatGradient watermark badge */
+        body > div:not(.grid-container),
+        body > a {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+        }
+        /* Hide any element with "neat" branding that gets injected */
+        a[href*="firecms"],
+        a[href*="neat"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        /* Ensure canvas fills viewport behind everything */
+        #gradient {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 0 !important;
+        }
+        /* Elevate grid-container above the canvas */
+        .grid-container {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
 <body>
-    <div class="background-image"></div>
+    <canvas id="gradient" style="width: 100%; height: 100%"></canvas>
     
     <div class="grid-container">
         <!-- Dashed Guide Lines (Overlay) -->
@@ -85,6 +123,93 @@
             </div>
         </div>
     </div>
+
+    <!-- NeatGradient Initialization -->
+    <script type="module">
+        import { NeatGradient } from "https://cdn.jsdelivr.net/npm/@firecms/neat/+esm";
+
+        const config = {
+            colors: [
+                { color: '#FD113F', enabled: true },
+                { color: '#90E0FF', enabled: true },
+                { color: '#297185', enabled: true },
+                { color: '#163A64', enabled: true },
+                { color: '#B7E8F3', enabled: true },
+                { color: '#B8D4E6', enabled: true },
+            ],
+            speed: 2,
+            horizontalPressure: 5,
+            verticalPressure: 6,
+            waveFrequencyX: 1,
+            waveFrequencyY: 2,
+            waveAmplitude: 10,
+            shadows: 0,
+            highlights: 7,
+            colorBrightness: 1.05,
+            colorSaturation: 0,
+            wireframe: false,
+            colorBlending: 9,
+            backgroundColor: '#003FFF',
+            backgroundAlpha: 1,
+            grainScale: 0,
+            grainSparsity: 0,
+            grainIntensity: 0,
+            grainSpeed: 0,
+            resolution: 1,
+            yOffset: 0,
+            yOffsetWaveMultiplier: 6.5,
+            yOffsetColorMultiplier: 5,
+            yOffsetFlowMultiplier: 3,
+            flowDistortionA: 1.2,
+            flowDistortionB: 2.4,
+            flowScale: 1.5,
+            flowEase: 0.41,
+            flowEnabled: false,
+            enableProceduralTexture: false,
+            textureVoidLikelihood: 0.06,
+            textureVoidWidthMin: 10,
+            textureVoidWidthMax: 500,
+            textureBandDensity: 0.8,
+            textureColorBlending: 0.06,
+            textureSeed: 333,
+            textureEase: 0.4,
+            proceduralBackgroundColor: '#FFED00',
+            textureShapeTriangles: 20,
+            textureShapeCircles: 15,
+            textureShapeBars: 15,
+            textureShapeSquiggles: 10,
+        };
+
+        const gradient = new NeatGradient({
+            ref: document.getElementById("gradient"),
+            ...config
+        });
+
+        // React to scroll
+        window.addEventListener("scroll", () => {
+            gradient.yOffset = window.scrollY;
+        });
+
+        // Remove any watermark elements injected by the library
+        setTimeout(() => {
+            // Remove any anchor tags pointing to firecms/neat
+            document.querySelectorAll('a[href*="firecms"], a[href*="neat"]').forEach(el => {
+                el.remove();
+            });
+            // Remove any sibling divs of the canvas that aren't our content
+            const canvas = document.getElementById('gradient');
+            if (canvas) {
+                let sibling = canvas.nextElementSibling;
+                while (sibling) {
+                    const next = sibling.nextElementSibling;
+                    if (!sibling.classList.contains('grid-container') && sibling.tagName !== 'SCRIPT') {
+                        sibling.remove();
+                    }
+                    sibling = next;
+                }
+            }
+        }, 500);
+    </script>
 
     <script>
         (() => {
